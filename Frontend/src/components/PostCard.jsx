@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { likePost, unlikePost } from "../services/postApi";
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from "../services/postApi";
 import CommentSection from "./CommentSection";
 
 function PostCard({ post, currentUserId, onDelete }) {
@@ -139,7 +139,7 @@ function PostCard({ post, currentUserId, onDelete }) {
               color: "#888"
             }}
           >
-            🗑️
+            🗑
           </button>
         )}
 
@@ -166,12 +166,7 @@ function PostCard({ post, currentUserId, onDelete }) {
         {/* Like Button */}
         <button
           onClick={handleLike}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: liked ? "#ec4899" : "#888"
-          }}
+          style={{ ...actionStyle, color: liked ? "#ec4899" : "#888" }}
         >
           {liked ? "❤️" : "🤍"} {likesCount}
         </button>
@@ -179,14 +174,20 @@ function PostCard({ post, currentUserId, onDelete }) {
         {/* Comment Toggle Button */}
         <button
           onClick={() => setShowComments((prev) => !prev)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "#888"
-          }}
+          style={actionStyle}
         >
           💬 {commentsCount}
+        </button>
+
+        {/* Bookmark Button */}
+        <button
+          onClick={handleBookmark}
+          style={{
+            ...actionStyle,
+            color: bookmarked ? "#2563eb" : "#888"
+          }}
+        >
+          {bookmarked ? "🔖" : "📌"}
         </button>
 
       </div>
@@ -196,7 +197,6 @@ function PostCard({ post, currentUserId, onDelete }) {
         <CommentSection
           postId={post.id}
           currentUserId={currentUserId}
-          commentsCount={commentsCount}
           setCommentsCount={setCommentsCount}
         />
       )}

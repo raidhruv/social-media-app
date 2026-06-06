@@ -40,6 +40,16 @@ export const deleteComment=async(commentId)=>{
  return response.data;
 };
 
+export const bookmarkPost=async(postId)=>{
+ const response=await api.post(`/posts/${postId}/bookmark`);
+ return response.data;
+};
+
+export const unbookmarkPost=async(postId)=>{
+ const response=await api.delete(`/posts/${postId}/bookmark`);
+ return response.data;
+};
+
 export const deletePost=async(postId)=>{
  const response=await api.delete(`/posts/${postId}`);
  return response.data;
