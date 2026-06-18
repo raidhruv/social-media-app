@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 const C = {
   bg: '#0d0d0d',
@@ -39,21 +41,30 @@ const s = {
 };
 
 function AppLayout({
-  children,
-
-  profile,
-  initials,
-
-  activeNav,
-  setActiveNav,
-
-  logout,
-
-  followed,
-  toggleFollow
+  children
 }) {
 
   const navigate = useNavigate();
+  const { user, loading } = useCurrentUser();
+
+  const [activeNav, setActiveNav] = useState("home");
+  const [followed, setFollowed] = useState({});
+
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    navigate("/login");
+  };
+
+  const toggleFollow = (name) => setFollowed(p => ({ ...p, [name]: !p[name] }));
+
+  const initials =
+    ((user?.firstName?.[0] || "") +
+    (user?.lastName?.[0] || ""))
+    .toUpperCase() ||
+    user?.username?.[0]?.toUpperCase() ||
+    "U";
+
+  if (loading) return null;
 
   return (
     <>
@@ -63,7 +74,7 @@ function AppLayout({
       <div style={s.root}>
 
         <TopBar
-          profile={profile}
+          profile={user}
           initials={initials}
           activeNav={activeNav}
           setActiveNav={setActiveNav}
@@ -73,7 +84,7 @@ function AppLayout({
         <div style={s.layout}>
 
           <LeftSidebar
-            profile={profile}
+            profile={user}
             initials={initials}
             activeNav={activeNav}
             setActiveNav={setActiveNav}

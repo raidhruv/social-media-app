@@ -1,11 +1,10 @@
 import { useState,useEffect } from "react";
-import api from "../services/api"
 import SearchBar from "../components/SearchBar";
 import NotificationBell from "../components/NotificationBell";
 import {createPost,getFeed} from "../services/postApi";
 import PostCard from "../components/PostCard";
-import { useNavigate } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 const C = {
   bg: '#0d0d0d',
@@ -309,13 +308,10 @@ const LEFT_NAV = [
 ];
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState('home');
+  const { user } = useCurrentUser();
   const [postText, setPostText] = useState('');
   const [composing, setComposing] = useState(false);
   const [feed,setFeed]=useState([]);
-  const [followed, setFollowed] = useState({});
-  const[profile,setProfile]=useState(null);
   const loadFeed=async()=>{
  try{
   const posts=await getFeed();
@@ -326,21 +322,9 @@ function Dashboard() {
 };
 
 useEffect(()=>{
-const fetchProfile=async()=>{
-try{
-const response=await api.get("/users/me");
-setProfile(response.data.user);
-}catch(err){console.error(err);}
-};
-fetchProfile();
 loadFeed();
 },[]);
-  
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    navigate('/login');
-  };
-  
+
   const handlePost=async()=>{
   try{
   if(!postText.trim()) return;
@@ -357,21 +341,9 @@ loadFeed();
  }
 };
 
-  const toggleFollow = (name) => setFollowed(p => ({ ...p, [name]: !p[name] }));
-
-  const initials=profile?((profile.firstName?.[0]||'')+(profile.lastName?.[0]||'')).toUpperCase()||profile.username?.[0]?.toUpperCase()||'U':'U';
-  
   return (
     <>
-      <AppLayout
-        profile={profile}
-        initials={initials}
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        logout={logout}
-        followed={followed}
-        toggleFollow={toggleFollow}
-      >
+      <AppLayout>
 
         {/* ── Center feed ── */}
         <div>
@@ -441,7 +413,7 @@ loadFeed();
             >
               <PostCard
                 post={post}
-                currentUserId={profile?.id}
+                currentUserId={user?.id}
                 onDelete={()=>{}}
               />
             </div>
