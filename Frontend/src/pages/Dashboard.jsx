@@ -5,6 +5,7 @@ import NotificationBell from "../components/NotificationBell";
 import {createPost,getFeed} from "../services/postApi";
 import PostCard from "../components/PostCard";
 import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
 const C = {
   bg: '#0d0d0d',
@@ -24,13 +25,6 @@ const C = {
 };
 
 const s = {
-  root: {
-    minHeight: '100vh',
-    background: C.bg,
-    fontFamily: "'Inter', sans-serif",
-    color: C.text,
-  },
-
   // ── Topbar ──
   topbar: {
     position: 'sticky', top: 0, zIndex: 100,
@@ -90,17 +84,6 @@ const s = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
     border: `2px solid ${C.border}`,
-  },
-
-  // ── Layout ──
-  layout: {
-    maxWidth: 1100,
-    margin: '0 auto',
-    padding: '1.25rem 1rem',
-    display: 'grid',
-    gridTemplateColumns: '260px minmax(0,1fr) 280px',
-    gap: '1.25rem',
-    alignItems: 'start',
   },
 
   // ── Card base ──
@@ -380,217 +363,92 @@ loadFeed();
   
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+      <AppLayout
+        profile={profile}
+        initials={initials}
+        activeNav={activeNav}
+        setActiveNav={setActiveNav}
+        logout={logout}
+        followed={followed}
+        toggleFollow={toggleFollow}
+      >
 
-      <div style={s.root}>
-
-        {/* ── Topbar ── */}
-        <div style={s.topbar}>
-          <div style={s.topbarLeft}>
-            <div style={s.logoWrap}><i className="ti ti-sparkles" /></div>
-            <div style={s.searchWrap}>
-              <SearchBar />
-            </div>
-          </div>
-
-          <div style={s.topbarNav}>
-            {NAV.map(n => (
-              <button key={n.key} style={s.navBtn(activeNav===n.key)} 
-              onClick={() => {
-                setActiveNav(n.key);
-                if (n.key === 'profile') {
-                  navigate('/profile');
-                }
-              }}>
-                <i className={`ti ${n.icon}`} style={{ fontSize:18 }} />
-                {n.label}
-              </button>
-            ))}
-          </div>
-
-          <div style={s.topbarRight}>
-            <NotificationBell style={s.notifBtn} dotStyle={s.notifDot}/>
-            <div style={s.avatarSmall} onClick={() => navigate('/profile')}>
-              {profile?.profilePicture?<img src={profile.profilePicture} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}}/>:initials}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Layout ── */}
-        <div style={s.layout}>
-
-          {/* ── Left sidebar ── */}
-          <div>
-            <div
-              style={{
-              ...s.card,
-            cursor: 'pointer'
-          }}
-          onClick={() => navigate('/profile')}
-        >
-              <div style={{...s.profileBanner,background:profile?.bannerImage?`url(${profile.bannerImage}) center/cover`:s.profileBanner.background}}>
-                <div style={s.profileAvatarWrap}>
-                  <div style={s.profileAvatar}>
-                    {profile?.profilePicture?<img src={profile.profilePicture} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}}/>:initials}
-                    <div style={s.onlineDot} />
+        {/* ── Center feed ── */}
+        <div>
+          {/* Create post card */}
+          <div style={s.card}>
+            {!composing ? (
+              <>
+                <div style={s.createPost}>
+                  <div style={s.createAvatarMini}>D</div>
+                  <div
+                    style={s.createInput}
+                    onClick={() => setComposing(true)}
+                  >
+                    What's on your mind?
                   </div>
                 </div>
-              </div>
-              <div style={s.profileInfo}>
-                <div style={s.profileName}>{profile?.firstName?`${profile.firstName} ${profile.lastName||''}`.trim():profile?.username}</div>
-                <div style={s.profileHandle}>@{profile?.username}</div>
-                <div style={s.profileBio}>{profile?.bio||"No bio yet."}</div>
-              </div>
-            </div>
-
-            <div style={s.card}>
-              {LEFT_NAV.map(n => (
-                <button key={n.key} style={s.leftNavItem(activeNav===n.key)} 
-                onClick={() => {
-                  setActiveNav(n.key);
-                  if (n.key === 'profile') {
-                    navigate('/profile');
-                  }
-                }}>
-                  <i className={`ti ${n.icon}`} style={{ fontSize:16 }} />
-                  {n.label}
-                </button>
-              ))}
-              <button style={s.logoutItem} onClick={logout}>
-                <i className="ti ti-logout" style={{ fontSize:16 }} />
-                Sign out
-              </button>
-            </div>
-          </div>
-
-          {/* ── Center feed ── */}
-          <div>
-            {/* Create post card */}
-            <div style={s.card}>
-              {!composing ? (
-                <>
-                  <div style={s.createPost}>
-                    <div style={s.createAvatarMini}>D</div>
-                    <div
-                      style={s.createInput}
-                      onClick={() => setComposing(true)}
-                    >
-                      What's on your mind?
-                    </div>
+                <div style={s.postActions}>
+                  {[['ti-photo','Photo'],['ti-video','Video'],['ti-link','Link'],['ti-mood-smile','Feeling']].map(([ico, lbl]) => (
+                    <button key={lbl} style={s.postActionBtn} onClick={() => setComposing(true)}>
+                      <i className={`ti ${ico}`} style={{ fontSize:16 }} /> {lbl}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={s.postBox}>
+                <div style={{ display:'flex', gap:'0.75rem', marginBottom:'0.75rem' }}>
+                  <div style={s.createAvatarMini}>D</div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:600, color:C.text }}>Dhruv</div>
+                    <div style={{ fontSize:11, color:C.textMuted }}>Public</div>
                   </div>
-                  <div style={s.postActions}>
-                    {[['ti-photo','Photo'],['ti-video','Video'],['ti-link','Link'],['ti-mood-smile','Feeling']].map(([ico, lbl]) => (
-                      <button key={lbl} style={s.postActionBtn} onClick={() => setComposing(true)}>
-                        <i className={`ti ${ico}`} style={{ fontSize:16 }} /> {lbl}
-                      </button>
+                </div>
+                <textarea
+                  style={s.postTextarea}
+                  rows={4}
+                  placeholder="What's on your mind?"
+                  value={postText}
+                  onChange={e => setPostText(e.target.value)}
+                  autoFocus
+                />
+                <div style={s.postSubmitRow}>
+                  <div style={s.postSubmitActions}>
+                    {['ti-photo','ti-mood-smile','ti-map-pin'].map(ico => (
+                      <div key={ico} style={s.postIconBtn}><i className={`ti ${ico}`} /></div>
                     ))}
                   </div>
-                </>
-              ) : (
-                <div style={s.postBox}>
-                  <div style={{ display:'flex', gap:'0.75rem', marginBottom:'0.75rem' }}>
-                    <div style={s.createAvatarMini}>D</div>
-                    <div>
-                      <div style={{ fontSize:13, fontWeight:600, color:C.text }}>Dhruv</div>
-                      <div style={{ fontSize:11, color:C.textMuted }}>Public</div>
-                    </div>
-                  </div>
-                  <textarea
-                    style={s.postTextarea}
-                    rows={4}
-                    placeholder="What's on your mind?"
-                    value={postText}
-                    onChange={e => setPostText(e.target.value)}
-                    autoFocus
-                  />
-                  <div style={s.postSubmitRow}>
-                    <div style={s.postSubmitActions}>
-                      {['ti-photo','ti-mood-smile','ti-map-pin'].map(ico => (
-                        <div key={ico} style={s.postIconBtn}><i className={`ti ${ico}`} /></div>
-                      ))}
-                    </div>
-                    <div style={{ display:'flex', gap:'0.5rem' }}>
-                      <button onClick={() => { setComposing(false); setPostText(''); }}
-                        style={{ ...s.postIconBtn, width:'auto', padding:'0 12px', fontSize:12, color:C.textMuted }}>
-                        Cancel
-                      </button>
-                      <button style={{ ...s.postBtn, opacity: postText.trim() ? 1 : 0.5 }} onClick={handlePost}>
-                        Post
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Feed */}
-            {feed.map(post=>(
-              <div
-                key={post.id}
-                style={s.card}
-              >
-                <PostCard
-                  post={post}
-                  currentUserId={profile?.id}
-                  onDelete={()=>{}}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* ── Right sidebar ── */}
-          <div>
-            {/* Suggestions */}
-            <div style={s.card}>
-              <div style={s.sidebarSection}>
-                <div style={s.sidebarTitle}>People you may know</div>
-                {SUGGESTIONS.map(u => (
-                  <div key={u.name} style={s.suggestionItem}>
-                    <div style={s.suggAvatar(u.c1, u.c2)}>{u.initials}</div>
-                    <div style={s.suggInfo}>
-                      <div style={s.suggName}>{u.name}</div>
-                      <div style={s.suggSub}>{u.sub}</div>
-                    </div>
-                    <button
-                      style={{ ...s.followBtn, background: followed[u.name] ? C.accentSoft : 'none', color: followed[u.name] ? C.accent : C.accent }}
-                      onClick={() => toggleFollow(u.name)}
-                    >
-                      {followed[u.name] ? 'Following' : 'Follow'}
+                  <div style={{ display:'flex', gap:'0.5rem' }}>
+                    <button onClick={() => { setComposing(false); setPostText(''); }}
+                      style={{ ...s.postIconBtn, width:'auto', padding:'0 12px', fontSize:12, color:C.textMuted }}>
+                      Cancel
+                    </button>
+                    <button style={{ ...s.postBtn, opacity: postText.trim() ? 1 : 0.5 }} onClick={handlePost}>
+                      Post
                     </button>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-
-            {/* Trending */}
-            <div style={s.card}>
-              <div style={s.sidebarSection}>
-                <div style={s.sidebarTitle}>Trending</div>
-                {TRENDS.map((t, i) => (
-                  <div key={t.tag}>
-                    <div style={s.trendItem}>
-                      <div style={s.trendCategory}>{t.cat}</div>
-                      <div style={s.trendTag}>{t.tag}</div>
-                      <div style={s.trendCount}>{t.count}</div>
-                    </div>
-                    {i < TRENDS.length - 1 && <div style={s.divider} />}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div style={{ padding:'0 0.5rem' }}>
-              <p style={{ fontSize:11, color:C.textMuted, lineHeight:1.8 }}>
-                Terms · Privacy · Cookies · Advertising · More<br />
-                <span style={{ color:'#3a3a3a' }}>© 2026 Arc Inc.</span>
-              </p>
-            </div>
+            )}
           </div>
 
+          {/* Feed */}
+          {feed.map(post=>(
+            <div
+              key={post.id}
+              style={s.card}
+            >
+              <PostCard
+                post={post}
+                currentUserId={profile?.id}
+                onDelete={()=>{}}
+              />
+            </div>
+          ))}
         </div>
-      </div>
+
+      </AppLayout>
     </>
   );
 }
